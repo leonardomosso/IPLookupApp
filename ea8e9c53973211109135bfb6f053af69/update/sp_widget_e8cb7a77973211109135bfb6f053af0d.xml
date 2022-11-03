@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <category>custom</category>
+        <client_script><![CDATA[function($scope,spUtil) {
+	var c = this;
+	var cancelar = false;
+	var resposta = {};
+	
+	spUtil.recordWatch($scope, $scope.data.table, "sys_id=" + $scope.data.sys_id);
+	
+	 var g_form = $scope.page.g_form;
+ var field = $scope.page.field;
+	
+	c.uiAction = function(action) {
+		c.data.action = action;
+		
+		if(action == 'salvarRevisao') {
+			
+			//input_u_choice_mud_testada
+			//input_u_entregue_conforme_esperado
+			//input_u_havera_necessidade_de_correcao
+			
+			
+				if($("#input_close_code").val()!='' && $("#input_close_notes").val()!=''  &&  $("#input_u_choice_mud_testada").val()!=''  && $("#input_u_entregue_conforme_esperado").val()!=''  &&	$("#input_u_havera_necessidade_de_correcao").val()!=''){
+
+
+					//atualizando os campos da mudança com a revisão - com o campo rollback
+					c.data.resposta = {
+						"close_code":$("#input_close_code").val(),
+						"close_code_dv": $('#input_close_code option:selected').text(),
+						"close_notes":$("#input_close_notes").val(),
+						"u_choice_mud_testada":$("#input_u_choice_mud_testada").val(),
+						"u_choice_mud_testada_dv": $('#input_u_choice_mud_testada option:selected').text(),
+						"u_entregue_conforme_esperado":$("#input_u_entregue_conforme_esperado").val(),
+						"u_entregue_conforme_esperado_dv": $('#input_u_entregue_conforme_esperado option:selected').text(),
+						"u_havera_necessidade_de_correcao":$("#input_u_havera_necessidade_de_correcao").val(),
+						"u_havera_necessidade_de_correcao_dv": $('#input_u_havera_necessidade_de_correcao option:selected').text()
+					};
+
+					c.server.update().then(function() {
+						c.data.action = undefined;
+						c.server.update();
+					});
+
+					$('#modal_revisao_gmud').modal('hide');
+
+				}
+				else{
+
+
+					alert("Obrigatório: Os campos deverão ser preenchidos!");
+
+
+
+
+				}
+				
+				
+			}else{//mensagem de erro
+				//g_form.addErrorMessage("Obrigatório: Os campos deverão ser preenchidos!");
+				alert("Obrigatório: Os campos deverão ser preenchidos!");
+			}
+			
+			
+			
+		
+		
+/*		if (cancelar || (resposta != '' && resposta != null)) {
+			c.data.resposta = resposta;
+			
+			c.server.update().then(function() {
+				c.data.action = undefined;
+				c.server.update();
+			});
+		}
+		else if (resposta == '' && action == 'reopen') {
+			alert("Por favor, descreva o motivo da reabertura");
+		} */
+		
+	};
+}]]></client_script>
+        <controller_as>c</controller_as>
+        <css>textarea {
+  resize: none;
+}
+
+.required label:after {
+  content:"*";color:red;
+}</css>
+        <data_table>sp_instance</data_table>
+        <demo_data/>
+        <description/>
+        <docs/>
+        <field_list/>
+        <has_preview>true</has_preview>
+        <id>revisar_change</id>
+        <internal>false</internal>
+        <link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+        <name>Revisar Change</name>
+        <option_schema/>
+        <public>false</public>
+        <roles/>
+        <script><![CDATA[(function() {
+	/* populate the 'data' object */
+	/* e.g., data.table = $sp.getValue('table'); */
+	
+	// Get table & sys_id
+	data.table = input.table || $sp.getParameter("table");
+	data.sys_id = input.sys_id || $sp.getParameter("sys_id");
+	
+	// Valid GlideRecord
+	gr = new GlideRecord(data.table);
+	if (!gr.isValid())
+		return;
+	
+	// Valid sys_id
+	if (!gr.get(data.sys_id))
+		return;
+	
+	//Widget Action and Buttons Visibility
+	if ( data.table == 'change_request' ) {
+		if ( gr.state == 0) {
+			data.showWidget = true;
+		}
+		else {
+			data.showWidget = false;
+			//data.showCancel = true;
+			//data.showReopen = false;
+		}
+	}
+	
+	if (input && input.action) {
+		var action = input.action;
+		var resposta = input.resposta;
+		
+		
+		if (action == 'salvarRevisao') { // salvando a revisão
+			
+			
+			gr.setValue('state', 3);//Encerrado
+			
+			gr.close_code =resposta.close_code;
+			gr.close_notes=resposta.close_notes;
+			
+			gr.u_choice_mud_testada =resposta.u_choice_mud_testada;
+			gr.u_entregue_conforme_esperado =resposta.u_entregue_conforme_esperado;
+			gr.u_havera_necessidade_de_correcao =resposta.u_havera_necessidade_de_correcao;
+			
+		
+			gr.comments = "A mudança foi revisada por: " +  gs.getUserDisplayName() + ", com a seguinte descrição:\n" +
+				"Sua solicitação foi testada? "+resposta.u_choice_mud_testada_dv+"\n"+
+				"Entregue conforme esperado? "+resposta.u_entregue_conforme_esperado_dv+"\n"+
+				"Haverá necessidade de correção? "+resposta.u_havera_necessidade_de_correcao_dv+"\n"+
+				"Código de fechamento: "+resposta.close_code_dv+"\n"+
+				"Anotações de fechamento: "+resposta.close_notes+"\n";
+			
+			
+			gr.update();
+			
+			gs.addInfoMessage("Mudança revisada com sucesso!")
+			
+		}
+	}
+})();]]></script>
+        <servicenow>false</servicenow>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2022-11-03 14:11:59</sys_created_on>
+        <sys_id>e8cb7a77973211109135bfb6f053af0d</sys_id>
+        <sys_mod_count>5</sys_mod_count>
+        <sys_name>Revisar Change</sys_name>
+        <sys_package display_value="IPLookup" source="x_731931_iplookup">ea8e9c53973211109135bfb6f053af69</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="IPLookup">ea8e9c53973211109135bfb6f053af69</sys_scope>
+        <sys_update_name>sp_widget_e8cb7a77973211109135bfb6f053af0d</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2022-11-03 14:15:28</sys_updated_on>
+        <template><![CDATA[<div ng-if="data.showWidget" class="panel panel-default">
+	<div class="panel-heading">Ações</div>
+	<div class="panel-body">
+		<!--  <button type="button" id="reopen" ng-if="data.showReopen" class="btn btn-primary btn-block" ng-click="c.uiAction('reopen')">Reabrir Ticket</button> 
+		<button type="button" id="cancel" ng-if="data.showCancel" class="btn btn-primary btn-block" ng-click="c.uiAction('cancel')">Cancelar Ticket</button> -->
+    
+    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#modal_revisao_gmud">Revisar Mudança</button>
+    
+    
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modal_revisao_gmud" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Revisão da Mudança</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+        
+        <div class="form-group required">
+          <label for="input_u_choice_mud_testada">Sua solicitação foi testada?</label>
+          <select class="form-control" id="input_u_choice_mud_testada" required="required">
+            <option value="" selected>- Nenhum(a) -</option>
+            <option value="sim">Sim</option>
+            <option value="não">Não</option>
+          </select>
+        </div>
+        
+        <div class="form-group required">
+          <label for="input_u_entregue_conforme_esperado">Entregue conforme esperado?</label>
+          <select class="form-control" id="input_u_entregue_conforme_esperado" required="required">
+            <option value="" selected>- Nenhum(a) -</option>
+            <option value="sim">Sim</option>
+            <option value="não">Não</option>
+          </select>
+        </div>
+        
+        <div class="form-group required">
+          <label for="input_u_havera_necessidade_de_correcao">Haverá necessidade de correção?</label>
+          <select class="form-control" id="input_u_havera_necessidade_de_correcao" required="required">
+            <option value="" selected>- Nenhum(a) -</option>
+            <option value="sim">Sim</option>
+            <option value="não">Não</option>
+          </select>
+        </div>
+        
+        
+        <div class="form-group required">
+          <label for="input_close_code">Código de fechamento: </label>
+          <select class="form-control" id="input_close_code" required="required">
+            <option value="" selected>- Nenhum(a) -</option>
+            <option value="sucesso">Sucesso</option>
+            <option value="falha">Falha</option>
+          </select>
+        </div>
+        
+        
+        <div class="form-group required">
+          <label for="input_close_notes">Anotações de fechamento:</label>
+          <textarea class="form-control" id="input_close_notes" rows="3" required="required"></textarea>
+        </div>
+        
+        
+        
+        
+        
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary"  ng-click="c.uiAction('salvarRevisao')">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+   $(document).ready(function(){
+  /*   $("#form_u_rollback").hide();
+     
+     
+    $("#input_close_code").on('change',function(){
+      var selectedBalue = $("#input_close_code").val();
+      if (selectedBalue == "nao_atingiu_objetivo_mudanca") 
+      {
+        $("#form_u_rollback").show();
+      }
+      else{
+        $("#form_u_rollback").hide();
+      }
+    }); 
+   */
+   });
+ </script> 
+
+
+]]></template>
+    </sp_widget>
+</record_update>
